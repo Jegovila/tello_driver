@@ -1,4 +1,4 @@
-# tello_driver
+# tello_driver ROS Noetic
 
 **DISCLAIMER: This package is an work-in-progress. I take no responsibility for any consequences of you using this software. The documentation might be broken, and features and API are considered VOLATILE presently.**
 
@@ -25,12 +25,12 @@ Parameters:
 
 ## Installation
 * `$ cd <CATKIN_WS/SRC>`
-* `$ git clone https://github.com/anqixu/TelloPy.git`
+* `$ git clone https://github.com/Jegovila/TelloPy.git`
 * `$ cd TelloPy`
 * `$ sudo -H pip2 install -e .`
 * `$ cd ..`
-* `$ git clone https://github.com/anqixu/h264_image_transport.git`
-* `$ git clone https://github.com/anqixu/tello_driver.git`
+* `$ git clone https://github.com/Jegovila/h264_image_transport.git`
+* `$ git clone https://github.com/Jegovila/tello_driver.git`
 * `$ cd ..`
 * `$ rosdep install h264_image_transport`
 * skip this step: `$ # rosdep install tello_driver # not working currently`
