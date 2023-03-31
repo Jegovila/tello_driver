@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import rospy
 from std_msgs.msg import Empty, UInt8, Bool
 from std_msgs.msg import UInt8MultiArray
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, Imu
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from dynamic_reconfigure.server import Server
@@ -133,9 +133,10 @@ class TelloNode(tello.Tello):
         # - https://github.com/Kragrathea/TelloLib/blob/master/TelloLib/parsedRecSpecs.json
         # self.pub_odom = rospy.Publisher(
         #    'odom', UInt8MultiArray, queue_size=1, latch=True)
-        # self.pub_odom = rospy.Publisher(
-        #    'odom', Odometry, queue_size=1, latch=True)
-        #self.subscribe(self.EVENT_LOG, self.cb_odom_log)
+        self.pub_odom = rospy.Publisher('odom', Odometry, queue_size=1, latch=True)
+        self.pub_imu = rospy.Publisher('imu', Imu, queue_size=1, latch=True)
+        self.subscribe(self.EVENT_LOG_DATA, self.cb_odom_log)
+
 
         rospy.loginfo('Tello driver node ready')
 
@@ -194,9 +195,53 @@ class TelloNode(tello.Tello):
         self.pub_status.publish(msg)
 
     def cb_odom_log(self, event, sender, data, **args):
-        odom_msg = UInt8MultiArray()
-        odom_msg.data = str(data)
+        #odom_msg = Odometry()
+        #odom_msg.pose.pose.orientation.w = str(data)
+        #self.pub_odom.publish(odom_msg)
+        time_cb = rospy.Time.now()
+
+        odom_msg = Odometry()
+        odom_msg.child_frame_id = rospy.get_namespace() + 'base_link'
+        odom_msg.header.stamp = time_cb
+        odom_msg.header.frame_id = rospy.get_namespace() + 'local_origin'        
+
+        # Height from MVO received as negative distance to floor
+        odom_msg.pose.pose.position.z = -data.mvo.pos_z #self.height #-data.mvo.pos_z
+        odom_msg.pose.pose.position.x = data.mvo.pos_x
+        odom_msg.pose.pose.position.y = data.mvo.pos_y
+        odom_msg.pose.pose.orientation.w = data.imu.q0
+        odom_msg.pose.pose.orientation.x = data.imu.q1
+        odom_msg.pose.pose.orientation.y = data.imu.q2
+        odom_msg.pose.pose.orientation.z = data.imu.q3
+        # Linear speeds from MVO received in dm/sec
+        odom_msg.twist.twist.linear.x = data.mvo.vel_y/10
+        odom_msg.twist.twist.linear.y = data.mvo.vel_x/10
+        odom_msg.twist.twist.linear.z = -data.mvo.vel_z/10
+        odom_msg.twist.twist.angular.x = data.imu.gyro_x
+        odom_msg.twist.twist.angular.y = data.imu.gyro_y
+        odom_msg.twist.twist.angular.z = data.imu.gyro_z
+                
         self.pub_odom.publish(odom_msg)
+        
+        imu_msg = Imu()
+        imu_msg.header.stamp = time_cb
+        imu_msg.header.frame_id = rospy.get_namespace() + 'base_link'
+        
+        imu_msg.orientation.w = data.imu.q0
+        imu_msg.orientation.x = data.imu.q1
+        imu_msg.orientation.y = data.imu.q2
+        imu_msg.orientation.z = data.imu.q3        
+        imu_msg.angular_velocity.x = data.imu.gyro_x
+        imu_msg.angular_velocity.y = data.imu.gyro_y
+        imu_msg.angular_velocity.z = data.imu.gyro_z
+        imu_msg.linear_acceleration.x = data.imu.acc_x
+        imu_msg.linear_acceleration.y = data.imu.acc_y
+        imu_msg.linear_acceleration.z = data.imu.acc_z
+        
+        self.pub_imu.publish(imu_msg)
+
+
+
 
     def cb_h264_frame(self, event, sender, data, **args):
         frame, seq_id, frame_secs = data
