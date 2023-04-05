@@ -65,7 +65,7 @@ It is possible to connect to multiple Tello drones by using multiple USB WiFi do
 
 ## tello_init.py
 
-El script toma la posición del tópico `/orbslam3/camerapose`. Es necesario que esté corriendo el paquete de orb_slam3. Hasta ahora solo se ha probado con el paquere MonoPubPose. Una vez corriendo MonoPubPose, es necesario ejecutar el script con
+El script toma la posición del tópico `/orb_slam3/camera_pose`. Es necesario que esté corriendo el paquete de orb_slam3. Hasta ahora solo se ha probado con el paquere MonoPubPose. Una vez corriendo MonoPubPose, es necesario ejecutar el script con
 ```
 rosrun tello_driver tello_init.py
 ```
