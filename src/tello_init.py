@@ -9,6 +9,9 @@ from std_msgs.msg import Empty
 x=0
 y=0
 z=0
+x_d = 0
+y_d = 0
+z_d = 0
 
 def getKey(key_timeout):
 	tty.setraw(sys.stdin.fileno())
@@ -26,19 +29,33 @@ def callback(msg):
 	y=msg.pose.position.y
 	z=msg.pose.position.z
 	#rospy.loginfo('x: {}, y:{}, z:{},' .format(x,y,z))
+	
+def callback_ref(msg):
+	global x_d,y_d,z_d
+	x_d=msg.pose.position.x
+	y_d=msg.pose.position.y
+	z_d=msg.pose.position.z
+	#rospy.loginfo('x_d: {}, y_d:{}, z_d:{},' .format(x_d,y_d,z_d))
 
 speed = 0.2 # m/s
 
 if __name__=="__main__":
 	settings = termios.tcgetattr(sys.stdin)
+	is_flying = False
+	count_takeoff = 0
 	# init nodo
 	rospy.init_node('tello_move')
+	
+	# init topic for reference
+	p_d = rospy.Publisher('/pos_d', PoseStamped, queue_size = 1)
+	p_d.publish(PoseStamped())
 
 	# publicar 
 	p = rospy.Publisher('/tello/cmd_vel', Twist, queue_size = 1)
 	pub_takeoff = rospy.Publisher('/tello/takeoff', Empty, queue_size = 1)
-	pub_palmLand = rospy.Publisher('/tello/land', Empty, queue_size = 1)
+	pub_land = rospy.Publisher('/tello/land', Empty, queue_size = 1)
 	rospy.Subscriber("/orb_slam3/camera_pose", PoseStamped, callback)
+	rospy.Subscriber("/pos_d", PoseStamped, callback_ref)
 	
 	rospy.sleep(5)
 
@@ -48,64 +65,52 @@ if __name__=="__main__":
 
 	# anunciar y mover
 	# Takeoff
-	rospy.loginfo("Takeoff")
-	#pub_takeoff.publish(empty_msg)
-	rospy.sleep(4)
-	'''
 	
-	# Movimiento
-	rospy.loginfo("Movimiento en Y")
-	twist = Twist()
-	twist.linear.y = speed 
-	p.publish(twist)
-	rospy.sleep(4)
-		
-	rospy.loginfo("Movimiento en Z")
-	twist = Twist()
-	twist.linear.z = speed 
-	p.publish(twist)
-	rospy.sleep(4)
-		
-	rospy.loginfo("Movimiento en X")
-	twist = Twist()
-	twist.linear.x = speed 
-	p.publish(twist)
-	rospy.sleep(4)
-		
-	rospy.loginfo("Regreso a home")
-	twist = Twist()
-	twist.linear.x = -speed
-	twist.linear.y = -speed 
-	twist.linear.z = -speed  
-	p.publish(twist)
-	rospy.sleep(4)
-	
-		 
-	# nuevo mensaje
-	rospy.loginfo("Stop")
-	twist = Twist() # default 0 (detenerse)
-	p.publish(twist)
-		
-	'''
-	
-	rospy.loginfo('Inicia control, aterrizar con l')
 	while True:
-		twist.linear.x = -z * speed * 10
-		twist.linear.y = x * speed * 10
-		twist.linear.z = y * speed * 10
-		p.publish(twist)
-		#rospy.loginfo('controlando')
-		key = getKey(.1)
-		if key == 'l':
+		rospy.loginfo("Esperando instrucción: t:takeoff   q:salir")
+		key_takeoff = getKey(2)
+		if key_takeoff == 't':
+			rospy.loginfo("Takeoff")
+			pub_takeoff.publish(empty_msg)
+			rospy.sleep(4)
+			is_flying = True
 			termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 			break
+		elif key_takeoff == 'q':
+			termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+			break
+		elif count_takeoff > 5:
+			rospy.loginfo("No hubo respuesta")
+			termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+			break			
 		else:
+			count_takeoff += 1
 			pass
+
+
+	if is_flying:
+		rospy.loginfo('Inicia control, aterrizar con l')
+		while True:
+			twist.linear.x = x_d - z * speed * 10
+			twist.linear.y = y_d + x * speed * 10
+			twist.linear.z = z_d + y * speed * 10
+			p.publish(twist)
+			#rospy.loginfo(z_d + y * speed * 10)
+			key = getKey(.1)
+			if key == 'l':
+				twist = Twist() # default 0 (detenerse)
+				p.publish(twist)
+				rospy.sleep(2)
+				rospy.loginfo("Landing")
+				pub_land.publish(empty_msg)
+				rospy.sleep(2)
+				is_flying = False
+				termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+				break
+			else:
+				pass
 		
-	twist = Twist() # default 0 (detenerse)
-	p.publish(twist)
-	rospy.sleep(2)
-	rospy.loginfo("Landing")
-	pub_palmLand.publish(empty_msg)
-	rospy.sleep(2)
+
+	
+	rospy.loginfo("Saliendo")
 
