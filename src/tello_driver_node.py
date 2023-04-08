@@ -229,14 +229,14 @@ class TelloNode(tello.Tello):
         
         imu_msg.orientation.w = data.imu.q0
         imu_msg.orientation.x = data.imu.q1
-        imu_msg.orientation.y = data.imu.q2
-        imu_msg.orientation.z = data.imu.q3        
+        imu_msg.orientation.y = -data.imu.q2
+        imu_msg.orientation.z = -data.imu.q3        
         imu_msg.angular_velocity.x = data.imu.gyro_x
-        imu_msg.angular_velocity.y = data.imu.gyro_y
-        imu_msg.angular_velocity.z = data.imu.gyro_z
-        imu_msg.linear_acceleration.x = data.imu.acc_x
-        imu_msg.linear_acceleration.y = data.imu.acc_y
-        imu_msg.linear_acceleration.z = data.imu.acc_z
+        imu_msg.angular_velocity.y = -data.imu.gyro_y
+        imu_msg.angular_velocity.z = -data.imu.gyro_z
+        imu_msg.linear_acceleration.x = -data.imu.acc_x * 9.80665
+        imu_msg.linear_acceleration.y = data.imu.acc_y * 9.80665
+        imu_msg.linear_acceleration.z = data.imu.acc_z * 9.80665
         
         self.pub_imu.publish(imu_msg)
 
