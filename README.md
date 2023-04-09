@@ -37,8 +37,10 @@ Parameters:
 * `$ rosdep install h264_image_transport`
 * skip this step: `$ # rosdep install tello_driver # not working currently`
 * `$ catkin build tello_driver`
-* Recommended rqt_ez_publisher for sending reference position using the gui
+* Recommended: rqt_ez_publisher for sending reference position using the gui
 * `$ sudo apt install ros-noetic-rqt-ez-publisher`
+* Optional: imu_tools (rviz_imu_plugin) to be able to see the IMU in rviz. 
+* `$ sudo apt-get install ros-noetic-imu-tools`
 
 Optionally, install the [following udev rules](https://github.com/anqixu/sixad_rumble/blob/master/misc/10-gamepads.rules) for PS3 gamepads; see instructions in comments on top of file.
 
