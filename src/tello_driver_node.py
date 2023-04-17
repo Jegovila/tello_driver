@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import rospy
+import rospy, cv2
 from std_msgs.msg import Empty, UInt8, Bool
 from std_msgs.msg import UInt8MultiArray
 from sensor_msgs.msg import Image, Imu
