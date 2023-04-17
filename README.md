@@ -48,7 +48,7 @@ Optionally, install the [following udev rules](https://github.com/anqixu/sixad_r
 
 * turn on drone and wait for its front lights to blink amber
 * connect WiFi to drone's access point (e.g. `TELLO_######`)
-* `$ roslaunch tello_driver launch/tello_node.launch`
+* `$ roslaunch tello_driver tello_node.launch`
 
 To see the camera:
 * `$ rosrun rqt_image_view rqt_image_view /tello/image_raw/compressed`
@@ -67,11 +67,12 @@ Now run:
 
 It is possible to connect to multiple Tello drones by using multiple USB WiFi dongles and a [Docker container running UDP proxy servers](wifi_docker_proxy).
 
-## tello_init.py
+## tello_control.py
 
-El script toma la posición del tópico `/orb_slam3/camera_pose`. Es necesario que esté corriendo el paquete de orb_slam3. Hasta ahora solo se ha probado con el paquere MonoPubPose. Una vez corriendo MonoPubPose, es necesario ejecutar el script con
+El script toma la posición del tópico `/orb_slam3/camera_pose`. Es necesario que esté corriendo el paquete de orb_slam3. Hasta ahora solo se ha probado con el paquere Mono. Una vez corriendo Mono, es necesario ejecutar el script con
 ```
 rosrun tello_driver tello_control.py
 ```
+
 ## Known bugs
 * Sometimes, perhaps when taking off without moving gamepad analog sticks / sending commands to `/tello/cmd_vel`, further cmd_vel will not work; fix by restarting node, moving gamepad analog sticks / send a message to `/tello/cmd_vel` FIRST, then takeoff
