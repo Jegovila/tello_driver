@@ -81,6 +81,14 @@ El script toma la posición del tópico `/orb_slam3/camera_pose`. Es necesario q
 ```
 rosrun tello_driver tello_control.py
 ```
+# Docker
+Hacer pull de la imagen
+* `$ docker pull jegovila/telloros:1.0`
+
+Ejecutar con
+* `$ xhost + && docker run --rm -it --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro jegovila/telloros:1.0`
+
+Puede ser necesario correr los comandos con sudo
 
 ## Known bugs
 * Sometimes, perhaps when taking off without moving gamepad analog sticks / sending commands to `/tello/cmd_vel`, further cmd_vel will not work; fix by restarting node, moving gamepad analog sticks / send a message to `/tello/cmd_vel` FIRST, then takeoff
